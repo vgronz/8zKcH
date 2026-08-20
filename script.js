@@ -685,8 +685,7 @@
   // ../pc/src/agent/src/utils/flags.js
   var FEATURE_NAMES = [
     "aimbot",
-    "autododge",
-    "esp",
+    "dodgesex",
     "spinner",
     "killaura",
     "camera",
