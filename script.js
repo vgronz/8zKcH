@@ -6144,7 +6144,7 @@
   // src/index.js
   var ACTIVE_MASK = FLAG_AIMBOT | FLAG_AUTODODGE | FLAG_ESP | FLAG_SPINNER | FLAG_KILLAURA | FLAG_SPRAY | FLAG_PIN | FLAG_HOLDSHOOT | FLAG_SPEEDHACK;
   var AIM_OR_KILL = FLAG_AIMBOT | FLAG_KILLAURA;
-  var TICK_FEATURES = /* @__PURE__ */ new Set(["aimbot", "autododge", "killaura", "esp", "spray", "pin", "spinner", "holdshoot", "speedhack"]);
+  var TICK_FEATURES = /* @__PURE__ */ new Set(["aimbot", "PromonSex", "killaura", "esp", "spray", "pin", "spinner", "holdshoot", "speedhack"]);
   var FEATURE_SETUP = {
     aimbot: setupAimbot,
     autododge: setupAutododge,
@@ -6312,7 +6312,7 @@
     if (!enabled && feature === "gradient") applyGradientAll();
     if (!enabled) {
       if (feature === "aimbot") resetAimbot();
-      if (feature === "autododge") resetAutododge();
+      if (feature === "dodgesex") resetAutododge();
       if (feature === "spinner") resetSpinner();
       if (feature === "esp") resetESP();
       if (feature === "camera") resetCamera();
