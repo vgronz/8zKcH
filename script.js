@@ -3130,9 +3130,9 @@
   var _scoreBuf = [];
   var _skip = /* @__PURE__ */ new Set();
   var _options = {
-    reactionSpeed: 50,
-    directionPrecision: 48,
-    safetyMargin: 25
+    reactionSpeed: 20,
+    directionPrecision: 42,
+    safetyMargin: 15
   };
   function _buildRing() {
     _ring.length = 0;
