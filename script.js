@@ -6082,7 +6082,7 @@
     }),
     Object.freeze({
       key: "autododge",
-      label: "Auto Dodge"
+      label: "DodgeSex"
     }),
     Object.freeze({
       key: "esp",
