@@ -6238,7 +6238,7 @@
           count: 69
         });
         setChatSpamOptions({
-          message: "test promon melly"
+          message: "pro mellystyler hard s2xon promon"
         });
         return true;
       }).catch(() => false);
