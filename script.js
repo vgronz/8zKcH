@@ -6239,7 +6239,7 @@
           count: 69
         });
         setChatSpamOptions({
-          message: "@4hypeless"
+          message: "okay okay okay test"
         });
         return true;
       }).catch(() => false);
