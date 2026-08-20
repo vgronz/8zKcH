@@ -6081,7 +6081,7 @@
       label: "Aimbot"
     }),
     Object.freeze({
-      key: "autododge",
+      key: "dodgesex",
       label: "DodgeSex"
     }),
     Object.freeze({
