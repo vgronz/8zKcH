@@ -6312,7 +6312,7 @@
     if (!enabled && feature === "gradient") applyGradientAll();
     if (!enabled) {
       if (feature === "aimbot") resetAimbot();
-      if (feature === "dodgesex") resetAutododge();
+      if (feature === "PromonDodge") resetAutododge();
       if (feature === "spinner") resetSpinner();
       if (feature === "esp") resetESP();
       if (feature === "camera") resetCamera();
