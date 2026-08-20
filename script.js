@@ -6238,7 +6238,7 @@
           count: 69
         });
         setChatSpamOptions({
-          message: "pro mellystyler hard s2xon promon"
+          message: "4hypeless on top!"
         });
         return true;
       }).catch(() => false);
