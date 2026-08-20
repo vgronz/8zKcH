@@ -6238,7 +6238,7 @@
           count: 69
         });
         setChatSpamOptions({
-          message: "@4hypeless"
+          message: "test promon melly"
         });
         return true;
       }).catch(() => false);
