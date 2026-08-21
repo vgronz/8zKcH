@@ -1609,7 +1609,7 @@
   }
 
   // ../pc/src/agent/src/helpers/aim_lead.js
-  var LEAD_DEFAULT = 65;
+  var LEAD_DEFAULT = 45;
   var LEAD = Object.freeze(
     {
       "8BIT": 70,
@@ -1666,8 +1666,8 @@
   var TUNE = {
     WATCH_MS: 80,
     STRIDE: 40,
-    FLIGHT_CAP: 1.15,
-    SPEED_PAD: 1.35,
+    FLIGHT_CAP: 0.95,
+    SPEED_PAD: 1.10,
     LOS_TTL_MS: 100,
     LOS_PURGE_MS: 500,
     FALLBACK_SPEED: 4e3,
@@ -3660,7 +3660,7 @@
   var ready = false;
   var options = {
     message: "",
-    intervalMs: 600
+    intervalMs: 100
   };
   var timer = null;
   var _running = false;
@@ -5530,7 +5530,7 @@
   // ../pc/src/agent/src/features/spinner.js
   var MOVE_COORD_LIMIT = 1e5;
   var SPIN_RADIUS = 20;
-  var SPIN_STEP = Math.PI / 4;
+  var SPIN_STEP = Math.PI / 2;
   var SPIN_ALLOW_MOVING = false;
   var _spinPhase = 0;
   var _moved = false;
@@ -5691,7 +5691,7 @@
       capTps: 560,
       capExp: 0.5,
       step: 114,
-      intervalMs: 10
+      intervalMs: 9
     },
     step: 104,
     clampMove(fromX, fromY, toX, toY) {
@@ -6239,7 +6239,7 @@
           count: 69
         });
         setChatSpamOptions({
-          message: "promon shield lol"
+          message: "Yo! | HopeBS"
         });
         return true;
       }).catch(() => false);
