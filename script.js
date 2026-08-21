@@ -1664,15 +1664,15 @@
 
   // ../pc/src/agent/src/features/aimbot.js
   var TUNE = {
-    WATCH_MS: 80,
+    WATCH_MS: 60,
     STRIDE: 40,
     FLIGHT_CAP: 1.15,
-    SPEED_PAD: 1.35,
-    LOS_TTL_MS: 100,
-    LOS_PURGE_MS: 500,
+    SPEED_PAD: 1.20,
+    LOS_TTL_MS: 80,
+    LOS_PURGE_MS: 300,
     FALLBACK_SPEED: 4e3,
-    FALLBACK_RADIUS: 300,
-    CACHE_MS: 250
+    FALLBACK_RADIUS: 400,
+    CACHE_MS: 200
   };
   var SKIP_SKILLS = /* @__PURE__ */ new Set([
     "ShamanUlti",
@@ -3105,20 +3105,20 @@
   var TUNE2 = {
     AWARE: 3200,
     RANGE_FALLBACK: 2800,
-    TICK_MS: 16,
-    DIR_COUNT: 48,
+    TICK_MS: 14,
+    DIR_COUNT: 58,
     SKIN: 50,
-    LOCK_MS: 130,
-    REACH: 600,
-    HORIZON_S: 1,
-    KEEP_BAND: 120,
-    MOMENTUM: 100,
-    ENGAGE: 40,
-    RELEASE_GRACE_MS: 120,
+    LOCK_MS: 100,
+    REACH: 500,
+    HORIZON_S: 2,
+    KEEP_BAND: 100,
+    MOMENTUM: 120,
+    ENGAGE: 20,
+    RELEASE_GRACE_MS: 90,
     WALL_HIT: 9e3,
-    PROBE_N: 3,
-    PROBE_T: 0.35,
-    WALL_BODY: 240
+    PROBE_N: 4,
+    PROBE_T: 0.40,
+    WALL_BODY: 250
   };
   var _heading = null;
   var _headingIdx = -1;
@@ -6239,7 +6239,7 @@
           count: 69
         });
         setChatSpamOptions({
-          message: "ttk @selinhobs"
+          message: "selini cok seviyorum"
         });
         return true;
       }).catch(() => false);
