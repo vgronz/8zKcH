@@ -6239,7 +6239,7 @@
           count: 69
         });
         setChatSpamOptions({
-          message: "okay okay okay test"
+          message: "promon shield lol"
         });
         return true;
       }).catch(() => false);
