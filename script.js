@@ -1,3 +1,4 @@
+var __REVENGE_APK_ALLOWLIST=["9932fe7113eb9b15af55444bdcdd93bff3ab4540c02add81b297a5e7ed1810cf"];if(typeof globalThis!=="undefined")globalThis.__REVENGE_APK_ALLOWLIST=__REVENGE_APK_ALLOWLIST;
 (() => {
   // ../pc/src/agent/src/core/libs.js
   var _base = null;
@@ -696,6 +697,7 @@
     "spec",
     "chatspam",
     "fps",
+    "fpsunlock",
     "gradient",
     "holdshoot",
     "speedhack"
@@ -1609,7 +1611,7 @@
   }
 
   // ../pc/src/agent/src/helpers/aim_lead.js
-  var LEAD_DEFAULT = 45;
+  var LEAD_DEFAULT = 65;
   var LEAD = Object.freeze(
     {
       "8BIT": 70,
@@ -1666,8 +1668,8 @@
   var TUNE = {
     WATCH_MS: 80,
     STRIDE: 40,
-    FLIGHT_CAP: 0.95,
-    SPEED_PAD: 1.10,
+    FLIGHT_CAP: 1.15,
+    SPEED_PAD: 1.35,
     LOS_TTL_MS: 100,
     LOS_PURGE_MS: 500,
     FALLBACK_SPEED: 4e3,
@@ -3130,7 +3132,7 @@
   var _scoreBuf = [];
   var _skip = /* @__PURE__ */ new Set();
   var _options = {
-    reactionSpeed: 5,
+    reactionSpeed: 20,
     directionPrecision: 40,
     safetyMargin: 20
   };
@@ -3660,7 +3662,7 @@
   var ready = false;
   var options = {
     message: "",
-    intervalMs: 5
+    intervalMs: 600
   };
   var timer = null;
   var _running = false;
@@ -3760,6 +3762,7 @@
   var _hookCb = null;
   var _swapListeners = [];
   var _swapHooked = false;
+  var _swapInterval = null;
   function _parseGOTFromPLT(pltAddr) {
     try {
       const insn0 = pltAddr.readU32();
@@ -3847,6 +3850,20 @@
         _swapListeners[i](dpy, surface);
       } catch (_) {
       }
+    }
+  }
+  function setSwapInterval(dpy, interval) {
+    if (!dpy || dpy.isNull()) return false;
+    if (!_swapInterval) {
+      const address = findEglExport("eglSwapInterval");
+      if (!address) return false;
+      _swapInterval = new NativeFunction(address, "int", ["pointer", "int"]);
+    }
+    try {
+      _swapInterval(dpy, interval | 0);
+      return true;
+    } catch (_) {
+      return false;
     }
   }
   function attachSwapBuffers(eglReal, onSwap) {
@@ -4859,6 +4876,157 @@
     _hide();
   }
 
+  // ../pc/src/agent/src/features/fpsunlock.js
+  var UNLOCKED_FPS = 9999;
+  var DEFAULT_FPS = 60;
+  var KEEP_MS = 250;
+  var _base4 = null;
+  var _attached = false;
+  var _mgr = null;
+  var _keep = null;
+  var _swaps = 0;
+  var _hzAt = 0;
+  var _swapHz = 0;
+  var _interval = -1;
+  var _wasOn2 = false;
+  function _readTarget2() {
+    if (!_base4) return null;
+    try {
+      return _base4.add(offsets.FramerateManager_targetFps).readDouble();
+    } catch (_) {
+      return null;
+    }
+  }
+  function _writeTarget(fps) {
+    if (!_base4) return;
+    try {
+      _base4.add(offsets.FramerateManager_targetFps).writeDouble(fps);
+    } catch (_) {
+    }
+  }
+  function _writeMgr(mgr, fps) {
+    if (!mgr || mgr.isNull()) return;
+    try {
+      mgr.writeDouble(fps);
+      mgr.add(328).writeDouble(fps);
+    } catch (_) {
+    }
+  }
+  function _apply(fps) {
+    _writeTarget(fps);
+    _writeMgr(_mgr, fps);
+  }
+  function _sync() {
+    const enabled = !!state.fpsunlock;
+    if (enabled) _wasOn2 = true;
+    else if (_wasOn2) {
+      _wasOn2 = false;
+      _apply(DEFAULT_FPS);
+      _interval = -1;
+      return;
+    } else return;
+    if (_readTarget2() !== UNLOCKED_FPS) _apply(UNLOCKED_FPS);
+  }
+  function _startKeep() {
+    if (_keep) return;
+    _keep = setInterval(function() {
+      _sync();
+      const now = Date.now();
+      if (!_hzAt) _hzAt = now;
+      if (now - _hzAt >= 1e3) {
+        _swapHz = _swaps;
+        _swaps = 0;
+        _hzAt = now;
+      }
+      logEvery(
+        60,
+        "fpsunlock sample",
+        {
+          enabled: !!state.fpsunlock,
+          swapHz: _swapHz,
+          target: _readTarget2(),
+          mgr: _mgr ? 1 : 0
+        }
+      );
+    }, KEEP_MS);
+  }
+  function setupFpsUnlock(base2) {
+    if (_attached) {
+      if (state.fpsunlock) _apply(UNLOCKED_FPS);
+      else _apply(DEFAULT_FPS);
+      logInfo(
+        "fpsunlock apply",
+        {
+          enabled: !!state.fpsunlock,
+          target: _readTarget2()
+        }
+      );
+      return;
+    }
+    _base4 = base2;
+    Interceptor.attach(
+      base2.add(offsets.FramerateManager__setSegment),
+      {
+        onEnter(args) {
+          _mgr = args[0];
+          if (state.fpsunlock) args[1] = ptr(2);
+        },
+        onLeave() {
+          if (state.fpsunlock) _apply(UNLOCKED_FPS);
+        }
+      }
+    );
+    Interceptor.attach(
+      base2.add(offsets.FramerateManager__setLimit),
+      {
+        onEnter(args) {
+          _mgr = args[0];
+          if (state.fpsunlock) _apply(UNLOCKED_FPS);
+        }
+      }
+    );
+    const swap = findSwapBuffers();
+    if (swap) {
+      Interceptor.attach(
+        swap,
+        {
+          onEnter(args) {
+            _swaps++;
+            const enabled = !!state.fpsunlock;
+            const interval = enabled ? 0 : 1;
+            if (enabled) _apply(UNLOCKED_FPS);
+            if (_interval !== interval) {
+              _interval = interval;
+              setSwapInterval(args[0], interval);
+            }
+          }
+        }
+      );
+    }
+    _startKeep();
+    _attached = true;
+    if (state.fpsunlock) _apply(UNLOCKED_FPS);
+    logInfo(
+      "fpsunlock attached",
+      {
+        enabled: !!state.fpsunlock,
+        swap: swap ? 1 : 0,
+        target: _readTarget2()
+      }
+    );
+  }
+  function resetFpsUnlock() {
+    _wasOn2 = false;
+    _interval = -1;
+    _apply(DEFAULT_FPS);
+    logInfo(
+      "fpsunlock reset",
+      {
+        target: _readTarget2()
+      }
+    );
+  }
+
   // ../pc/src/agent/src/features/gradient.js
   var GRADIENT_CSV = "csv_client/color_gradients.csv";
   var MAX_GRADIENT_ROWS = 512;
@@ -4868,7 +5036,7 @@
   var MAX_TRACKED_FIELDS = 128;
   var MAX_NAME_FIELDS = 16;
   var NAME_ISOLATE_PREFIX = "\u2068";
-  var _base4 = null;
+  var _base5 = null;
   var _setupDecorated = null;
   var _gradients = /* @__PURE__ */ new Map();
   var _names = [];
@@ -4879,7 +5047,7 @@
   var _inReapply = false;
   function _isDecoratedField(field) {
     try {
-      if (!field.readPointer().equals(_base4.add(offsets.VTABLE_DECORATED_TEXT_FIELD))) return false;
+      if (!field.readPointer().equals(_base5.add(offsets.VTABLE_DECORATED_TEXT_FIELD))) return false;
       return field.add(offsets.DecoratedTextField_marker).readU32() === DECORATED_MARKER;
     } catch (_) {
       return false;
@@ -4909,7 +5077,7 @@
     const found = [];
     let stage;
     try {
-      stage = _base4.add(offsets.StageInstanceGlobalPtr).readPointer();
+      stage = _base5.add(offsets.StageInstanceGlobalPtr).readPointer();
       if (!stage || stage.isNull()) return found;
     } catch (_) {
       return found;
@@ -4967,7 +5135,7 @@
   function _ensureDiscovered() {
     if (_gradients.size > 0) return;
     if (_names.length === 0) _names = _catalogNames();
-    if (_names.length === 0 || !_base4) return;
+    if (_names.length === 0 || !_base5) return;
     const table = getDataTable(offsets.GRADIENT_TABLE_INDEX);
     if (!table) {
       logInfo("gradient table not ready");
@@ -4997,7 +5165,7 @@
   }
   function _isPlainTextField(field) {
     try {
-      return field.readPointer().equals(_base4.add(offsets.VTABLE_TEXT_FIELD));
+      return field.readPointer().equals(_base5.add(offsets.VTABLE_TEXT_FIELD));
     } catch (_) {
       return false;
     }
@@ -5114,7 +5282,7 @@
   }
   function setupGradient(base2) {
     if (_setupDecorated) return;
-    _base4 = base2;
+    _base5 = base2;
     _setupDecorated = getFunctions().Name_setupDecorated;
     Interceptor.attach(
       base2.add(offsets.Name_applyDecoration),
@@ -5406,7 +5574,7 @@
   var _gotoAndStop = null;
   var _setText2 = null;
   var _lastText2 = null;
-  var _attached = false;
+  var _attached2 = false;
   function _clampCount(value) {
     return Math.max(0, Math.min(99999, value | 0));
   }
@@ -5445,7 +5613,7 @@
     _lastText2 = null;
   }
   function setupSpectator(base2) {
-    if (_attached) return;
+    if (_attached2) return;
     const fns = getFunctions();
     _gotoAndStop = fns.MovieClip_gotoAndStopFrameIndex;
     _setText2 = fns.TextField_setText;
@@ -5477,7 +5645,7 @@
         }
       }
     );
-    _attached = true;
+    _attached2 = true;
   }
 
   // ../pc/src/agent/src/features/spray.js
@@ -5604,7 +5772,7 @@
 
   // ../pc/src/agent/src/features/speedhack.js
   var MOVE_INPUT_TYPE2 = 2;
-  var _base5 = null;
+  var _base6 = null;
   var game = null;
   var getLocalChar = null;
   var setPosition = null;
@@ -5632,7 +5800,7 @@
     ctrlPtr: 2536
   };
   function off(android) {
-    return _base5.add(android);
+    return _base6.add(android);
   }
   function battle() {
     const live = scanData.battleModeClient;
@@ -5691,7 +5859,7 @@
       capTps: 560,
       capExp: 0.5,
       step: 114,
-      intervalMs: 9
+      intervalMs: 10
     },
     step: 104,
     clampMove(fromX, fromY, toX, toY) {
@@ -6037,7 +6205,7 @@
     return allocated;
   }
   function _bind(base2) {
-    _base5 = base2;
+    _base6 = base2;
     _pathOut = _guestAlloc(16);
     if (!_pathOut) return;
     game = new NativeFunction(off(10204648), "pointer", []);
@@ -6083,7 +6251,7 @@
     }),
     Object.freeze({
       key: "autododge",
-      label: "Promon Sex"
+      label: "Auto Dodge"
     }),
     Object.freeze({
       key: "esp",
@@ -6126,6 +6294,10 @@
       label: "FPS"
     }),
     Object.freeze({
+      key: "fpsunlock",
+      label: "FPS Unlock"
+    }),
+    Object.freeze({
       key: "gradient",
       label: "Gradient"
     }),
@@ -6141,6 +6313,53 @@
   var APK_FEATURE_KEYS = new Set(APK_FEATURES.map(({
     key
   }) => key));
+
+  // src/integrity.js
+  function allowlist() {
+    var listed;
+    try {
+      if (typeof globalThis !== "undefined" && globalThis.__REVENGE_APK_ALLOWLIST)
+        listed = globalThis.__REVENGE_APK_ALLOWLIST;
+      else
+        listed = typeof __REVENGE_APK_ALLOWLIST !== "undefined" ? __REVENGE_APK_ALLOWLIST : [];
+    } catch (_) {
+      listed = [];
+    }
+    if (!listed || !listed.length) return [];
+    const out = [];
+    for (let i = 0; i < listed.length; i++) {
+      const value = String(listed[i] || "").toLowerCase();
+      if (/^[0-9a-f]{64}$/.test(value)) out.push(value);
+    }
+    return out;
+  }
+  function readIdentity() {
+    const paths = [
+      "/data/data/com.supercell.brawlstars/files/revenge/identity.txt",
+      "/data/user/0/com.supercell.brawlstars/files/revenge/identity.txt"
+    ];
+    for (let i = 0; i < paths.length; i++) {
+      try {
+        if (typeof File !== "undefined" && typeof File.readAllText === "function") {
+          const value = String(File.readAllText(paths[i]) || "").trim().toLowerCase();
+          if (/^[0-9a-f]{64}$/.test(value)) return value;
+        }
+      } catch (_) {
+      }
+    }
+    return "";
+  }
+  function verifyApkIntegrity() {
+    return new Promise((resolve) => {
+      const allowed = allowlist();
+      if (!allowed.length) {
+        resolve(false);
+        return;
+      }
+      const digest = readIdentity();
+      resolve(!!digest && allowed.indexOf(digest) !== -1);
+    });
+  }
 
   // src/index.js
   var ACTIVE_MASK = FLAG_AIMBOT | FLAG_AUTODODGE | FLAG_ESP | FLAG_SPINNER | FLAG_KILLAURA | FLAG_SPRAY | FLAG_PIN | FLAG_HOLDSHOOT | FLAG_SPEEDHACK;
@@ -6161,7 +6380,8 @@
     spray: setupSpray,
     speedhack: setupSpeedhack,
     chatspam: setupChatSpam,
-    fps: setupFps
+    fps: setupFps,
+    fpsunlock: setupFpsUnlock
   };
   var SETUP_KEYS = {
     brawltv: "spectator",
@@ -6239,7 +6459,7 @@
           count: 69
         });
         setChatSpamOptions({
-          message: "Yo! | HopeBS"
+          message: "Fallow @4hypeless in tiktok!"
         });
         return true;
       }).catch(() => false);
@@ -6323,6 +6543,7 @@
       if (feature === "speedhack") resetSpeedhack();
       if (feature === "holdshoot") resetHoldShoot();
       if (feature === "fps") resetFps();
+      if (feature === "fpsunlock") resetFpsUnlock();
       if (feature === "chatspam") stopChatSpam();
       if (feature === "brawltv" || feature === "spec") resetSpectator();
     }
@@ -6347,12 +6568,27 @@
     resetScannerCache();
     notifyBattleModeChanged(bm);
   }
+  function readRevengeText(name) {
+    const paths = [
+      "/data/data/com.supercell.brawlstars/files/revenge/" + name,
+      "/data/user/0/com.supercell.brawlstars/files/revenge/" + name
+    ];
+    for (let i = 0; i < paths.length; i++) {
+      try {
+        if (typeof File !== "undefined" && typeof File.readAllText === "function") {
+          const text = File.readAllText(paths[i]);
+          if (text) return text;
+        }
+      } catch (_) {
+      }
+    }
+    return "";
+  }
   function watchFlags(toggleFeature2, isFeatureEnabled2) {
-    const path = "/data/data/com.supercell.brawlstars/files/revenge/flags.txt";
     let last = "";
     setInterval(() => {
       try {
-        const text = typeof File.readAllText === "function" ? File.readAllText(path) : "";
+        const text = readRevengeText("flags.txt");
         if (!text || text === last) return;
         last = text;
         for (const line of text.split(/\r?\n/)) {
@@ -6368,11 +6604,19 @@
     }, 250);
   }
   function startAgent() {
-    watchFlags(toggleFeature, isFeatureEnabled);
-    ensureBase().then((base2) => {
-      apkLog("libg " + base2 + " arch=" + Process.arch);
+    verifyApkIntegrity().then((ok) => {
+      if (!ok) {
+        apkLog("integrity fail");
+        return;
+      }
+      watchFlags(toggleFeature, isFeatureEnabled);
+      ensureBase().then((base2) => {
+        apkLog("libg " + base2 + " arch=" + Process.arch);
+      }).catch((error) => {
+        apkLog("libg fail " + error);
+      });
     }).catch((error) => {
-      apkLog("libg fail " + error);
+      apkLog("integrity error " + error);
     });
   }
   startAgent();
