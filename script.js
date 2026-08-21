@@ -3130,9 +3130,9 @@
   var _scoreBuf = [];
   var _skip = /* @__PURE__ */ new Set();
   var _options = {
-    reactionSpeed: 50,
-    directionPrecision: 48,
-    safetyMargin: 25
+    reactionSpeed: 15,
+    directionPrecision: 40,
+    safetyMargin: 23
   };
   function _buildRing() {
     _ring.length = 0;
@@ -3660,7 +3660,7 @@
   var ready = false;
   var options = {
     message: "",
-    intervalMs: 600
+    intervalMs: 2
   };
   var timer = null;
   var _running = false;
@@ -5398,10 +5398,10 @@
   var FRAME_SPECTATORS = 0;
   var FRAME_BRAWLTV = 1;
   var _brawltv = {
-    count: 69
+    count: 31
   };
   var _spec = {
-    count: 69
+    count: 31
   };
   var _gotoAndStop = null;
   var _setText2 = null;
@@ -5691,7 +5691,7 @@
       capTps: 560,
       capExp: 0.5,
       step: 114,
-      intervalMs: 10
+      intervalMs: 9
     },
     step: 104,
     clampMove(fromX, fromY, toX, toY) {
@@ -6239,7 +6239,7 @@
           count: 69
         });
         setChatSpamOptions({
-          message: "@4hypeless"
+          message: "tiktok @selinhobs takip edin"
         });
         return true;
       }).catch(() => false);
