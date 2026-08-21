@@ -6239,7 +6239,7 @@
           count: 69
         });
         setChatSpamOptions({
-          message: "tiktok @selinhobs takip edin"
+          message: "ttk @selinhobs"
         });
         return true;
       }).catch(() => false);
