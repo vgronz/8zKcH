@@ -3131,7 +3131,7 @@
   var _skip = /* @__PURE__ */ new Set();
   var _options = {
     reactionSpeed: 5,
-    directionPrecision: 42,
+    directionPrecision: 40,
     safetyMargin: 20
   };
   function _buildRing() {
@@ -3660,7 +3660,7 @@
   var ready = false;
   var options = {
     message: "",
-    intervalMs: 100
+    intervalMs: 5
   };
   var timer = null;
   var _running = false;
@@ -5530,7 +5530,7 @@
   // ../pc/src/agent/src/features/spinner.js
   var MOVE_COORD_LIMIT = 1e5;
   var SPIN_RADIUS = 20;
-  var SPIN_STEP = Math.PI / 2;
+  var SPIN_STEP = Math.PI / 4;
   var SPIN_ALLOW_MOVING = false;
   var _spinPhase = 0;
   var _moved = false;
