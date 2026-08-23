@@ -6239,7 +6239,7 @@
           count: 69
         });
         setChatSpamOptions({
-          message: "selini cok seviyorum"
+          message: "LexoBs On Top!"
         });
         return true;
       }).catch(() => false);
